@@ -1,0 +1,8 @@
+{
+  "name": "Lumani",
+  "description": "A configurable, backend-agnostic React frontend for school administration, attendance tracking, academic results, and role-based workflows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
