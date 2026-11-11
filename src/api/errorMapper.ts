@@ -8,6 +8,36 @@
 import { AxiosError } from 'axios';
 import { AppApiError } from '../types/api';
 
+const genericHttpMessages = new Set([
+  'bad request',
+  'unauthorized',
+  'forbidden',
+  'not found',
+  'conflict',
+  'unprocessable entity',
+  'too many requests',
+  'internal server error',
+]);
+
+function fallbackMessage(status: number, isLoginRequest: boolean): string {
+  if (isLoginRequest && (status === 400 || status === 401)) {
+    return "Invalid credentials. Check your username and password. If you don't have an account, create one below.";
+  }
+  if (status === 400) return 'Some information is missing or invalid. Review the form and try again.';
+  if (status === 401) return 'Your session has expired or you are not signed in. Please log in.';
+  if (status === 403) return "You don't have permission to perform this action.";
+  if (status === 404) return "We couldn't find the requested record.";
+  if (status === 409) return 'This conflicts with an existing record. Check your details and try again.';
+  if (status === 422) return 'Some submitted information could not be accepted. Review the form and try again.';
+  if (status === 429) return 'Too many requests. Wait a moment and try again.';
+  if (status >= 500) return "We couldn't complete your request due to a server problem. Please try again later.";
+  return 'The request could not be completed. Check your details and try again.';
+}
+
+function isGenericHttpMessage(message: string): boolean {
+  return genericHttpMessages.has(message.trim().toLowerCase());
+}
+
 export function normalizeError(error: unknown): AppApiError {
   if (!error) {
     return {
@@ -16,31 +46,35 @@ export function normalizeError(error: unknown): AppApiError {
     };
   }
 
-  // If already an AppApiError
-  if (typeof error === 'object' && error !== null && 'status' in error && 'message' in error) {
+  const axiosError = error as AxiosError<Record<string, unknown>>;
+  const isAxiosError = typeof error === 'object'
+    && error !== null
+    && 'isAxiosError' in error
+    && error.isAxiosError === true;
+
+  // Axios errors also have status and message properties; normalize those first.
+  if (!isAxiosError && typeof error === 'object' && error !== null && 'status' in error && 'message' in error) {
     return error as AppApiError;
   }
-
-  const axiosError = error as AxiosError<Record<string, unknown>>;
 
   if (axiosError.isAxiosError && axiosError.response) {
     const status = axiosError.response.status;
     const data = axiosError.response.data;
-
-    let message = 'A server error occurred. Please try again.';
+    const isLoginRequest = /\/auth\/login(?:[/?#]|$)/i.test(axiosError.config?.url ?? '');
+    const isInvalidLogin = isLoginRequest && (status === 400 || status === 401);
+    let message = fallbackMessage(status, isLoginRequest);
     let code: string | undefined;
     const fieldErrors: Record<string, string> = {};
 
-    if (typeof data === 'string') {
+    if (typeof data === 'string' && status < 500 && !isInvalidLogin) {
       message = data;
     } else if (data && typeof data === 'object') {
-      // Common backend message fields
-      if (typeof data.message === 'string') {
-        message = data.message;
-      } else if (typeof data.error === 'string') {
-        message = data.error;
-      } else if (typeof data.detail === 'string') {
-        message = data.detail;
+      if (status < 500 && !isInvalidLogin) {
+        const responseMessage = [data.message, data.detail, data.error]
+          .find((value): value is string =>
+            typeof value === 'string' && value.trim().length > 0 && !isGenericHttpMessage(value)
+          );
+        if (responseMessage) message = responseMessage;
       }
 
       if (typeof data.code === 'string') {
@@ -49,7 +83,7 @@ export function normalizeError(error: unknown): AppApiError {
 
       // Handle Spring Boot / RFC-7807 validation errors
       // e.g. { errors: [{ field: 'email', defaultMessage: 'Invalid' }] }
-      if (Array.isArray(data.errors)) {
+      if (!isInvalidLogin && Array.isArray(data.errors)) {
         data.errors.forEach((item) => {
           if (typeof item === 'object' && item !== null) {
             const errObj = item as Record<string, unknown>;
@@ -60,35 +94,38 @@ export function normalizeError(error: unknown): AppApiError {
             }
           }
         });
-      } else if (data.fieldErrors && typeof data.fieldErrors === 'object') {
+      } else if (!isInvalidLogin && data.fieldErrors && typeof data.fieldErrors === 'object') {
         // e.g. { fieldErrors: { email: 'already exists' } }
         Object.entries(data.fieldErrors as Record<string, unknown>).forEach(([k, v]) => {
           if (typeof v === 'string') {
             fieldErrors[k] = v;
           }
         });
-      } else if (status === 400) {
+      } else if (!isInvalidLogin && status === 400) {
         // Flat field map: e.g. { firstName: 'First name is required', email: 'Email exists' }
         Object.entries(data).forEach(([key, val]) => {
-          if (typeof val === 'string' && key !== 'message' && key !== 'error' && key !== 'timestamp' && key !== 'path') {
+          if (
+            typeof val === 'string'
+            && !['message', 'error', 'timestamp', 'path', 'status', 'code', 'fieldErrors', 'title', 'detail'].includes(key)
+          ) {
             fieldErrors[key] = val;
           }
         });
       }
     }
 
-    // Role / status specific fallbacks
-    if (status === 401) {
-      message = message === 'A server error occurred. Please try again.' ? 'Your session has expired. Please log in again.' : message;
+    if (isInvalidLogin) {
+      code = 'INVALID_CREDENTIALS';
+      message = fallbackMessage(status, true);
+    } else if (status === 400) {
+      code = code ?? 'VALIDATION_FAILED';
+    } else if (status === 401) {
       code = code ?? 'UNAUTHORIZED';
     } else if (status === 403) {
-      message = message === 'A server error occurred. Please try again.' ? 'You do not have permission to perform this action.' : message;
       code = code ?? 'FORBIDDEN';
     } else if (status === 404) {
-      message = message === 'A server error occurred. Please try again.' ? 'The requested resource was not found.' : message;
       code = code ?? 'NOT_FOUND';
     } else if (status === 409) {
-      message = message === 'A server error occurred. Please try again.' ? 'A conflict occurred. A record with this identifier may already exist.' : message;
       code = code ?? 'CONFLICT';
     }
 

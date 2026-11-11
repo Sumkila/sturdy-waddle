@@ -84,7 +84,11 @@ export const LoginPage: React.FC = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
         <Card padding="lg" className="shadow-lg">
-          <FormErrorSummary rootError={rootError} fieldErrors={errors} />
+          <FormErrorSummary
+            title={rootError ? 'Sign-in failed' : undefined}
+            rootError={rootError}
+            fieldErrors={errors}
+          />
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
             <FormField

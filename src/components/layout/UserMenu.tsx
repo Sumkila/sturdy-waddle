@@ -68,30 +68,34 @@ export const UserMenu: React.FC = () => {
               </div>
             </div>
 
-            {/* Quick role switcher for testing all backend roles */}
-            <div className="px-3 py-1.5 text-[10px] uppercase font-semibold text-slate-400 tracking-wider flex items-center gap-1">
-              <ArrowRightLeft className="w-3 h-3" />
-              Switch Active Role
-            </div>
-            <div className="px-2 py-1 space-y-0.5 border-b border-slate-100">
-              {ALL_ROLES.map((r) => (
-                <button
-                  key={r}
-                  onClick={() => {
-                    switchRoleForDev(r);
-                    setIsOpen(false);
-                  }}
-                  className={`w-full text-left px-2 py-1.5 rounded-lg text-xs transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
-                    role === r
-                      ? 'bg-sky-50 text-sky-800 font-semibold'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                  }`}
-                >
-                  <span>{r}</span>
-                  {role === r && <span className="text-[10px] text-sky-600 font-bold">Active</span>}
-                </button>
-              ))}
-            </div>
+            {role === 'ADMIN' && (
+              <>
+                {/* Quick role switcher for testing all backend roles */}
+                <div className="px-3 py-1.5 text-[10px] uppercase font-semibold text-slate-400 tracking-wider flex items-center gap-1">
+                  <ArrowRightLeft className="w-3 h-3" />
+                  Switch Active Role
+                </div>
+                <div className="px-2 py-1 space-y-0.5 border-b border-slate-100">
+                  {ALL_ROLES.map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => {
+                        switchRoleForDev(r);
+                        setIsOpen(false);
+                      }}
+                      className={`w-full text-left px-2 py-1.5 rounded-lg text-xs transition-all duration-150 flex items-center justify-between cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
+                        role === r
+                          ? 'bg-sky-50 text-sky-800 font-semibold'
+                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      }`}
+                    >
+                      <span>{r}</span>
+                      {role === r && <span className="text-[10px] text-sky-600 font-bold">Active</span>}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
 
             <button
               onClick={() => {

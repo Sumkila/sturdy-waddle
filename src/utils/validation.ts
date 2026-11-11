@@ -56,7 +56,7 @@ export const subjectSchema = z.object({
   subjectCode: z.string().min(1, 'Subject code is required'),
   subjectName: z.string().min(1, 'Subject name is required'),
   grade: z.string().min(1, 'Grade is required'),
-  teacher: z.string().optional(),
+  teacherId: z.string().optional(),
   description: z.string().optional(),
 });
 

@@ -8,7 +8,7 @@ export interface Subject {
   subjectName: string;
   grade: string;
   teacher?: string;
-  teacherId?: string;
+  teacherId?: number;
   description?: string;
   credits?: number;
   createdAt?: string;
@@ -18,8 +18,7 @@ export interface SubjectCreatePayload {
   subjectCode: string;
   subjectName: string;
   grade: string;
-  teacher?: string;
-  teacherId?: string;
+  teacherId?: number;
   description?: string;
 }
 

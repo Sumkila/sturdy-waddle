@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, Save, GraduationCap, Info } from 'lucide-react';
+import { ArrowLeft, Save, GraduationCap } from 'lucide-react';
 import { resultSchema, ResultFormData } from '../../utils/validation';
 import { useApiQuery } from '../../hooks/useApiQuery';
 import { useApiMutation } from '../../hooks/useApiMutation';
@@ -101,14 +101,9 @@ export const ResultFormPage: React.FC = () => {
 
   const updateMutation = useApiMutation({
     mutationFn: (data: ResultFormData) => resultsService.updateResult(id!, data),
-    onSuccess: (updated) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['results'] });
-      // Neutral warning if backend returned unmodified result (reference backend limitation)
-      if (existingResult && updated && updated.score === existingResult.score && updated.score !== undefined) {
-        toast('Update requested. Note: Some reference backend configurations do not persist result edits.', 'info');
-      } else {
-        toast('Result record updated successfully.', 'success');
-      }
+      toast('Result record updated successfully.', 'success');
       navigate('/results');
     },
     onError: (err) => {
@@ -152,15 +147,6 @@ export const ResultFormPage: React.FC = () => {
           </p>
         </div>
       </div>
-
-      {isEdit && (
-        <div className="flex items-start gap-2.5 p-3.5 rounded-xl border border-sky-200 bg-sky-50 text-xs text-sky-900">
-          <Info className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
-          <p>
-            Note: On the default reference Spring Boot API, result updates may be treated as immutable by the backend.
-          </p>
-        </div>
-      )}
 
       <Card padding="lg">
         <FormErrorSummary rootError={rootError} fieldErrors={errors} />

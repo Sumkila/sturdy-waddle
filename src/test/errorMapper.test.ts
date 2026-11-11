@@ -45,6 +45,29 @@ describe('errorMapper.normalizeError', () => {
     expect(result.message).toContain('session has expired');
   });
 
+  it('gives login failures a clear invalid-credentials message and registration suggestion', () => {
+    const mockAxiosError = {
+      isAxiosError: true,
+      status: 400,
+      message: 'Request failed with status code 400',
+      config: { url: '/api/auth/login' },
+      response: {
+        status: 400,
+        data: {
+          status: 400,
+          error: 'Bad Request',
+        },
+      },
+    };
+
+    const result = normalizeError(mockAxiosError);
+    expect(result.status).toBe(400);
+    expect(result.code).toBe('INVALID_CREDENTIALS');
+    expect(result.message).toContain('Invalid credentials');
+    expect(result.message).toContain('create one below');
+    expect(result.message).not.toContain('Request failed with status code');
+  });
+
   it('normalizes Axios 403 forbidden error', () => {
     const mockAxiosError = {
       isAxiosError: true,
@@ -58,6 +81,23 @@ describe('errorMapper.normalizeError', () => {
     expect(result.status).toBe(403);
     expect(result.code).toBe('FORBIDDEN');
     expect(result.message).toContain('do not have permission');
+  });
+
+  it('uses a helpful fallback for an unstructured 404 response', () => {
+    const mockAxiosError = {
+      isAxiosError: true,
+      response: {
+        status: 404,
+        data: {
+          status: 404,
+          error: 'Not Found',
+          path: '/api/missing',
+        },
+      },
+    };
+
+    const result = normalizeError(mockAxiosError);
+    expect(result.message).toContain("couldn't find the requested record");
   });
 
   it('normalizes network disconnect error', () => {

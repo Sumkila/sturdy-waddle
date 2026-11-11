@@ -43,7 +43,7 @@ export const SubjectFormPage: React.FC = () => {
       subjectCode: '',
       subjectName: '',
       grade: '',
-      teacher: '',
+      teacherId: '',
       description: '',
     },
   });
@@ -69,14 +69,17 @@ export const SubjectFormPage: React.FC = () => {
         subjectCode: existingSubject.subjectCode || '',
         subjectName: existingSubject.subjectName || '',
         grade: existingSubject.grade || '',
-        teacher: existingSubject.teacher || '',
+        teacherId: existingSubject.teacherId?.toString() || '',
         description: existingSubject.description || '',
       });
     }
   }, [existingSubject, reset]);
 
   const createMutation = useApiMutation({
-    mutationFn: (data: SubjectFormData) => subjectsService.createSubject(data),
+    mutationFn: (data: SubjectFormData) => subjectsService.createSubject({
+      ...data,
+      teacherId: data.teacherId ? Number(data.teacherId) : undefined,
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subjects'] });
       toast('Curriculum subject created successfully!', 'success');
@@ -88,7 +91,10 @@ export const SubjectFormPage: React.FC = () => {
   });
 
   const updateMutation = useApiMutation({
-    mutationFn: (data: SubjectFormData) => subjectsService.updateSubject(id!, data),
+    mutationFn: (data: SubjectFormData) => subjectsService.updateSubject(id!, {
+      ...data,
+      teacherId: data.teacherId ? Number(data.teacherId) : undefined,
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subjects'] });
       toast('Subject details updated successfully!', 'success');
@@ -166,11 +172,11 @@ export const SubjectFormPage: React.FC = () => {
             />
           </FormField>
 
-          <FormField label="Assigned Faculty Teacher" name="teacher" error={errors.teacher?.message}>
-            <Select id="teacher" {...register('teacher')} error={errors.teacher?.message}>
+          <FormField label="Assigned Faculty Teacher" name="teacherId" error={errors.teacherId?.message}>
+            <Select id="teacherId" {...register('teacherId')} error={errors.teacherId?.message}>
               <option value="">Select an instructor...</option>
               {(teachers || []).map((t) => (
-                <option key={t.id} value={formatFullName(t.firstName, t.lastName)}>
+                <option key={t.id} value={t.id}>
                   {formatFullName(t.firstName, t.lastName)} ({t.department})
                 </option>
               ))}
