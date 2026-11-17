@@ -59,7 +59,14 @@ export const tokenStorage = {
   },
 
   clear(): void {
-    tokenStorage.removeToken();
-    tokenStorage.removeRole();
+    for (const storageName of ['localStorage', 'sessionStorage'] as const) {
+      try {
+        const storage = window[storageName];
+        storage.removeItem(appConfig.authTokenKey);
+        storage.removeItem(appConfig.authRoleKey);
+      } catch {
+        // Storage may be unavailable in restricted browser contexts.
+      }
+    }
   },
 };

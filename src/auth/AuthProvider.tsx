@@ -4,7 +4,7 @@
  * Manages user state, login, registration, logout, and token lifecycle.
  */
 
-import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AuthResponse, AuthUser, LoginCredentials, RegisterPayload, UserRole } from '../types/auth';
 import { tokenStorage } from './tokenStorage';
 import { authService } from '../api/services/auth.service';
@@ -44,21 +44,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return null;
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const logoutStarted = useRef(false);
+
+  const clearSessionAndReload = useCallback(() => {
+    if (logoutStarted.current) return;
+    logoutStarted.current = true;
+    authService.logout();
+    setToken(null);
+    setRole(null);
+    setUser(null);
+    window.location.replace('/login');
+  }, []);
 
   // Synchronize on mount and handle unauthorized events
   useEffect(() => {
-    const handleUnauthorized = () => {
-      setToken(null);
-      setRole(null);
-      setUser(null);
-      tokenStorage.clear();
-    };
-
-    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    window.addEventListener('auth:unauthorized', clearSessionAndReload);
     return () => {
-      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+      window.removeEventListener('auth:unauthorized', clearSessionAndReload);
     };
-  }, []);
+  }, [clearSessionAndReload]);
 
   const login = useCallback(async (credentials: LoginCredentials): Promise<AuthResponse> => {
     setIsLoading(true);
@@ -103,11 +107,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const logout = useCallback(() => {
-    authService.logout();
-    setToken(null);
-    setRole(null);
-    setUser(null);
-  }, []);
+    clearSessionAndReload();
+  }, [clearSessionAndReload]);
 
   const hasCapability = useCallback(
     (capability: AppCapability): boolean => {

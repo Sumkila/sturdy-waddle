@@ -24,6 +24,14 @@ export const axiosInstance: AxiosInstance = axios.create({
   },
 });
 
+export function clearAuthorizationDefaults(): void {
+  const headers = axiosInstance.defaults.headers;
+  for (const method of ['common', 'delete', 'get', 'head', 'post', 'put', 'patch'] as const) {
+    delete headers[method].Authorization;
+    delete headers[method].authorization;
+  }
+}
+
 // Request interceptor: attach Bearer token if available
 axiosInstance.interceptors.request.use(
   (config) => {

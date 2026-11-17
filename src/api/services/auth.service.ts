@@ -6,6 +6,7 @@
 
 import { apiAdapter } from '../apiAdapter';
 import { tokenStorage } from '../../auth/tokenStorage';
+import { clearClientSession } from '../../auth/sessionCleanup';
 import { AuthResponse, LoginCredentials, RegisterPayload, UserRole } from '../../types/auth';
 
 /**
@@ -36,6 +37,7 @@ export const authService = {
    * stores authentication state, and returns the AuthResponse.
    */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    clearClientSession();
     const response = await apiAdapter.login(credentials);
     const token = response.token;
 
@@ -84,6 +86,7 @@ export const authService = {
    * Registers a new user account.
    */
   async register(payload: RegisterPayload): Promise<AuthResponse> {
+    clearClientSession();
     const response = await apiAdapter.register(payload);
     if (response.token) {
       tokenStorage.setToken(response.token);
@@ -102,7 +105,7 @@ export const authService = {
    * Logs out the user and clears stored credentials.
    */
   logout(): void {
-    tokenStorage.clear();
+    clearClientSession();
   },
 
   /**

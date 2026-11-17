@@ -9,6 +9,8 @@ import { queryClient } from './lib/queryClient';
 import { AuthProvider } from './auth/AuthProvider';
 import { ToastProvider } from './components/ui/Toast';
 import { AppRoutes } from './routes/AppRoutes';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 export default function App() {
   return (
@@ -17,6 +19,8 @@ export default function App() {
         <AuthProvider>
           <ToastProvider>
             <AppRoutes />
+            <Analytics />
+            <SpeedInsights />
           </ToastProvider>
         </AuthProvider>
       </BrowserRouter>
