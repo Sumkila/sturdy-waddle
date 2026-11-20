@@ -62,7 +62,7 @@ The user's assigned role on the backend lacks the required authority for that en
 
 ## 4. Environment Variables Not Loading
 
-**Symptom**: `VITE_API_URL` defaults to `http://localhost:8080` even after modifying `.env`.
+**Symptom**: `VITE_API_URL` does not use the backend URL configured in `.env`.
 
 **Cause**: Vite only loads environment variables prefixed with `VITE_` at startup.
 
@@ -79,10 +79,10 @@ The user's assigned role on the backend lacks the required authority for that en
 
 **Symptom**: Frontend shows error card `Unable to reach the school server. Please verify the backend is running...`.
 
-**Cause**: Backend is down or running on a different port than specified in `.env`.
+**Cause**: Backend is unavailable or `VITE_API_URL` points to the wrong service.
 
 **Resolution**:
-1. Verify backend is running on `http://localhost:8080` or update `VITE_API_URL`.
+1. Verify the backend is reachable at `https://fictional-octo-1.onrender.com` or update `VITE_API_URL`.
 2. Check firewall or Docker container port mappings.
 
 ---

@@ -12,7 +12,7 @@ In your environment file (`.env`):
 
 ```env
 # Base URL of your backend REST service (no trailing slash)
-VITE_API_URL=http://localhost:8080
+VITE_API_URL=https://fictional-octo-1.onrender.com
 
 # Optional common prefix applied to all API routes
 VITE_API_PREFIX=/api

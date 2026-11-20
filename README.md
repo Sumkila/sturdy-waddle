@@ -126,9 +126,9 @@ Copy the example environment configuration:
 ```bash
 cp .env.example .env
 ```
-Default configuration connects to the reference Spring Boot API at `http://localhost:8080`:
+Default configuration connects to the deployed API:
 ```env
-VITE_API_URL=http://localhost:8080
+VITE_API_URL=https://fictional-octo-1.onrender.com
 VITE_API_PREFIX=/api
 VITE_APP_NAME=Lumani
 VITE_AUTH_TOKEN_KEY=app_token
@@ -140,6 +140,8 @@ VITE_AUTH_ROLE_KEY=app_role
 npm run dev
 ```
 The application will start on `http://localhost:3000`.
+
+The default API URL is `https://fictional-octo-1.onrender.com`. For a locally running backend, set `VITE_API_URL=http://localhost:8080` in `.env` and restart the Vite server.
 
 ### 5. Running Tests
 ```bash

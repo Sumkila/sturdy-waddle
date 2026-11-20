@@ -17,7 +17,7 @@ interface AppConfig {
   isDev: boolean;
 }
 
-const rawApiUrl = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8080';
+const rawApiUrl = (import.meta.env.VITE_API_URL as string | undefined) ?? 'https://fictional-octo-1.onrender.com';
 const cleanApiUrl = rawApiUrl.replace(/\/+$/, '');
 
 const rawApiPrefix = (import.meta.env.VITE_API_PREFIX as string | undefined) ?? '/api';

@@ -7,6 +7,7 @@ import { AlertCircle, RotateCcw } from 'lucide-react';
 import { Button } from './Button';
 import { cn } from '../../lib/utils';
 import { AppApiError } from '../../types/api';
+import { appConfig } from '../../config/appConfig';
 
 export interface ErrorStateProps {
   error?: AppApiError | Error | null;
@@ -47,7 +48,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 
       {isNetwork && (
         <p className="mt-2 text-[11px] text-slate-500 font-mono bg-white px-2.5 py-1 rounded border border-slate-200">
-          Target: http://localhost:8080 (Check backend status or CORS)
+          Target: {appConfig.apiUrl} (Check backend status or CORS)
         </p>
       )}
 
